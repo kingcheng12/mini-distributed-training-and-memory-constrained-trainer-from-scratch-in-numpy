@@ -22,8 +22,25 @@ def make_synthetic_regression_batch(batch_size, in_dim, out_dim, seed):
 
     return x, y
 
-# Step 2 - init_mlp_params (not yet solved)
-# TODO: implement
+# Step 2 - init_mlp_params
+import numpy as np
+
+def init_mlp_params(in_dim, hidden_dim, out_dim, seed):
+    # TODO: return a dict {'W1','b1','W2','b2'} with He-initialized weights and zero biases.
+    np.random.seed(seed)
+
+    W1 = np.random.normal(loc=0, scale=np.sqrt(2/in_dim), size = (in_dim, hidden_dim))
+    W2 = np.random.normal(loc=0, scale=np.sqrt(2/hidden_dim), size = (hidden_dim, out_dim))
+
+    b1 = np.zeros((hidden_dim, ))
+    b2 = np.zeros((out_dim, ))
+
+    return {
+        'W1': W1,
+        'W2': W2,
+        'b1': b1,
+        'b2': b2
+    }
 
 # Step 3 - linear_forward (not yet solved)
 # TODO: implement

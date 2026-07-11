@@ -11,7 +11,7 @@ python scaffold.py
 ## Steps
 
 - [x] **1.** make_synthetic_regression_batch
-- [ ] **2.** init_mlp_params
+- [x] **2.** init_mlp_params
 - [ ] **3.** linear_forward
 - [ ] **4.** relu_forward
 - [ ] **5.** mlp_forward
