@@ -12,7 +12,7 @@ python scaffold.py
 
 - [x] **1.** make_synthetic_regression_batch
 - [x] **2.** init_mlp_params
-- [ ] **3.** linear_forward
+- [x] **3.** linear_forward
 - [ ] **4.** relu_forward
 - [ ] **5.** mlp_forward
 - [ ] **6.** mse_loss_and_grad

@@ -42,8 +42,11 @@ def init_mlp_params(in_dim, hidden_dim, out_dim, seed):
         'b2': b2
     }
 
-# Step 3 - linear_forward (not yet solved)
-# TODO: implement
+# Step 3 - linear_forward
+def linear_forward(x, w, b):
+    # TODO: apply y = x @ w + b and return the resulting (N, out_dim) array
+
+    return x @ w + b
 
 # Step 4 - relu_forward (not yet solved)
 # TODO: implement
