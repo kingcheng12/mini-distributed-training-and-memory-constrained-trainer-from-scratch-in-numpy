@@ -48,8 +48,14 @@ def linear_forward(x, w, b):
 
     return x @ w + b
 
-# Step 4 - relu_forward (not yet solved)
-# TODO: implement
+# Step 4 - relu_forward
+def relu_forward(x):
+    # TODO: apply the ReLU activation elementwise and return an array of the same shape.
+    
+    mask = x > 0
+    x_masked = np.where(mask, x, 0)
+
+    return x_masked
 
 # Step 5 - mlp_forward (not yet solved)
 # TODO: implement
