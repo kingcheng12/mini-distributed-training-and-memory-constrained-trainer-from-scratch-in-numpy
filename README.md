@@ -19,7 +19,7 @@ python scaffold.py
 - [x] **7.** linear_backward
 - [x] **8.** relu_backward
 - [x] **9.** first_linear_backward
-- [ ] **10.** mlp_backward
+- [x] **10.** mlp_backward
 - [ ] **11.** split_into_micro_batches
 - [ ] **12.** accumulate_gradients
 - [ ] **13.** scale_accumulated_gradients
