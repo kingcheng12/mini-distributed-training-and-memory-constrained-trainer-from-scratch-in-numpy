@@ -15,7 +15,7 @@ python scaffold.py
 - [x] **3.** linear_forward
 - [x] **4.** relu_forward
 - [x] **5.** mlp_forward
-- [ ] **6.** mse_loss_and_grad
+- [x] **6.** mse_loss_and_grad
 - [ ] **7.** linear_backward
 - [ ] **8.** relu_backward
 - [ ] **9.** first_linear_backward
