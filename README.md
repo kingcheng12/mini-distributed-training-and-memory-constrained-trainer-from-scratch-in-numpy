@@ -14,7 +14,7 @@ python scaffold.py
 - [x] **2.** init_mlp_params
 - [x] **3.** linear_forward
 - [x] **4.** relu_forward
-- [ ] **5.** mlp_forward
+- [x] **5.** mlp_forward
 - [ ] **6.** mse_loss_and_grad
 - [ ] **7.** linear_backward
 - [ ] **8.** relu_backward
