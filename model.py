@@ -62,7 +62,7 @@ def mlp_forward(x, params):
     z1 = linear_forward(x, params['W1'], params['b1'])
     a1 = relu_forward(z1)
 
-    z2 = linear_forward(x, params['W2'], params['b2'])
+    z2 = linear_forward(a1, params['W2'], params['b2'])
 
     cache = {}
     cache['x'] = x
