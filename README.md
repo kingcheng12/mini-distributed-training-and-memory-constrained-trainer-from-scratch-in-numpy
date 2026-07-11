@@ -1,0 +1,2 @@
+# mini-distributed-training-and-memory-constrained-trainer-from-scratch-in-numpy
+Build a complete training stack in pure NumPy that mirrors how modern frameworks scale models and fit them into limited memory. Implement an MLP with manual autograd, then add gradient accumulation, activation checkpointing, mixed precision, data-parallel all-reduce, and ZeRO-style optimizer sharding under realistic memory budgets.
