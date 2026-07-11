@@ -140,8 +140,19 @@ def split_into_micro_batches(x, y, micro_batch_size):
 
     return micro_batches
 
-# Step 12 - accumulate_gradients (not yet solved)
-# TODO: implement
+# Step 12 - accumulate_gradients
+def accumulate_gradients(accum_grads, new_grads):
+    # TODO: return a dict whose values are elementwise sums of accum_grads and new_grads.
+    if accum_grads is None:
+        return {
+            key: value.copy()
+            for key, value in new_grads.items()
+        }
+
+    return {
+        key: accum_grads[key] + new_grads[key]
+        for key in new_grads
+    }
 
 # Step 13 - scale_accumulated_gradients (not yet solved)
 # TODO: implement
