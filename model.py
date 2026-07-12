@@ -333,9 +333,6 @@ def mixed_precision_step(x, y, master_params, scale, lr):
     grads = unscale_gradients(scaled_grads, scale)
 
     # Defensive check after unscaling
-    if has_non_finite_gradients(grads):
-        return loss, new_master, True
-
     for name in new_master:
         new_master[name] -= lr * grads[name]
 
