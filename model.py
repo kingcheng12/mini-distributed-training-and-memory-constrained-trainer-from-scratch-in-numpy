@@ -262,8 +262,15 @@ def cast_to_half_precision(values):
 
     return out
 
-# Step 20 - make_master_params (not yet solved)
-# TODO: implement
+# Step 20 - make_master_params
+def make_master_params(params):
+    # TODO: return a dict mapping the same keys to independent float32 copies of each array.
+    
+    out = {}
+    for key in params:
+        out[key] = params[key].astype(np.float32, copy=True)
+
+    return out
 
 # Step 21 - scale_loss (not yet solved)
 # TODO: implement
