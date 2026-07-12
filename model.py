@@ -299,8 +299,47 @@ def has_non_finite_gradients(grads):
     
     return False
 
-# Step 24 - mixed_precision_step (not yet solved)
-# TODO: implement
+# Step 24 - mixed_precision_step
+def mixed_precision_step(x, y, master_params, scale, lr):
+    # TODO: run fp16 forward/backward, unscale grads, skip on overflow, else SGD-update fp32 master.
+    # FP16 working copies
+    params_half = cast_to_half_precision(master_params)
+    x_half = x.astype(np.float16)
+    y_half = y.astype(np.float16)
+
+    # FP16 forward and backward
+    y_pred, cache = mlp_forward(x_half, params_half)
+    loss, dy_pred = mse_loss_and_grad(y_pred, y_half)
+
+    _, scaled_dy_pred = scale_loss(loss, dy_pred, scale)
+    scaled_grads = mlp_backward(
+                                scaled_dy_pred,
+                                cache,
+                                params_half
+                                )
+
+    # Detect overflow before updating.
+    overflow = has_non_finite_gradients(scaled_grads)
+
+    # Always return an independent FP32 master copy.
+    new_master = {
+                name: param.astype(np.float32, copy=True)
+                for name, param in master_params.items()
+                }
+
+    if overflow:
+        return loss, new_master, True
+
+    grads = unscale_gradients(scaled_grads, scale)
+
+    # Defensive check after unscaling
+    if has_non_finite_gradients(grads):
+        return loss, new_master, True
+
+    for name in new_master:
+        new_master[name] -= lr * grads[name]
+
+    return loss, new_master, False
 
 # Step 25 - shard_dataset_across_workers (not yet solved)
 # TODO: implement
