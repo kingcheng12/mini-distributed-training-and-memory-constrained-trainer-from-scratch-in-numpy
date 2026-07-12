@@ -277,8 +277,15 @@ def scale_loss(loss, dy_pred, scale):
     # TODO: Scale the scalar loss and the upstream gradient dy_pred by the fixed loss scale.
     return loss * scale, dy_pred * scale
 
-# Step 22 - unscale_gradients (not yet solved)
-# TODO: implement
+# Step 22 - unscale_gradients
+def unscale_gradients(grads, scale):
+    # TODO: divide every gradient tensor by scale and return a new float32 dict
+    out = {}
+    for key in grads.keys():
+        out[key] = grads[key]/scale
+        out[key] = out[key].astype(np.float32)
+
+    return out
 
 # Step 23 - has_non_finite_gradients (not yet solved)
 # TODO: implement

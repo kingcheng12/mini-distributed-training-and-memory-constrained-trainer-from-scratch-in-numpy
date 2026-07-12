@@ -31,7 +31,7 @@ python scaffold.py
 - [x] **19.** cast_to_half_precision
 - [x] **20.** make_master_params
 - [x] **21.** scale_loss
-- [ ] **22.** unscale_gradients
+- [x] **22.** unscale_gradients
 - [ ] **23.** has_non_finite_gradients
 - [ ] **24.** mixed_precision_step
 - [ ] **25.** shard_dataset_across_workers
