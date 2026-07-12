@@ -16,7 +16,7 @@ def make_synthetic_regression_batch(batch_size, in_dim, out_dim, seed):
 
     x = np.random.randn(batch_size, in_dim)
     hidden = np.random.randn(in_dim, out_dim)
-    noise = np.random.normal(loc=0, scale=0.01, size=(batch_size, out_dim))
+    noise = np.random.normal(loc=0, scale=0.1, size=(batch_size, out_dim))
 
     y = x @ hidden + noise
 
