@@ -166,20 +166,19 @@ def grad_accumulation_step(x, y, params, micro_batch_size):
     # TODO: run forward/backward on each micro batch and combine grads to match a full-batch step.
     
     micro_batches = split_into_micro_batches(x, y, micro_batch_size)
-
     accum_grads = None
-    total_elements = y.size
 
     for x_micro, y_micro in micro_batches:
         y_pred, cache = mlp_forward(x_micro, params)
-
-        # Match the normalization used by full-batch MSE.
-        dy_pred = 2.0 * (y_pred - y_micro) / total_elements
-
+        _, dy_pred = mse_loss_and_grad(y_pred, y_micro)
         new_grads = mlp_backward(dy_pred, cache, params)
+
         accum_grads = accumulate_gradients(accum_grads, new_grads)
 
-    return accum_grads
+    return scale_accumulated_gradients(
+        accum_grads,
+        len(micro_batches)
+    )
 
 # Step 15 - mlp_forward_checkpointed (not yet solved)
 # TODO: implement
