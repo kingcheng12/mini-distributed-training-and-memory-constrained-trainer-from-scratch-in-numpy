@@ -130,15 +130,18 @@ def mlp_backward(dy_pred, cache, params):
 def split_into_micro_batches(x, y, micro_batch_size):
     # TODO: split (x, y) into contiguous micro batches of at most micro_batch_size rows.
     if micro_batch_size <= 0:
-        raise ValueError("micro_batch_size needs to > 0")
+        raise ValueError("micro_batch_size must be positive")
 
-    micro_batches = []
+    if len(x) != len(y):
+        raise ValueError("x and y must have the same number of rows")
 
-    for start in range(0, len(x), micro_batch_size):
-        end = start + micro_batch_size
-        micro_batches.append((x[start:end], y[start:end]))
-
-    return micro_batches
+    return [
+        (
+            x[start:start + micro_batch_size],
+            y[start:start + micro_batch_size],
+        )
+        for start in range(0, len(x), micro_batch_size)
+    ]
 
 # Step 12 - accumulate_gradients
 def accumulate_gradients(accum_grads, new_grads):
@@ -158,8 +161,25 @@ def scale_accumulated_gradients(accum_grads, num_micro_batches):
         for key, gradient in accum_grads.items()
     }
 
-# Step 14 - grad_accumulation_step (not yet solved)
-# TODO: implement
+# Step 14 - grad_accumulation_step
+def grad_accumulation_step(x, y, params, micro_batch_size):
+    # TODO: run forward/backward on each micro batch and combine grads to match a full-batch step.
+    
+    micro_batches = split_into_micro_batches(x, y, micro_batch_size)
+
+    accum_grads = None
+    total_elements = y.size
+
+    for x_micro, y_micro in micro_batches:
+        y_pred, cache = mlp_forward(x_micro, params)
+
+        # Match the normalization used by full-batch MSE.
+        dy_pred = 2.0 * (y_pred - y_micro) / total_elements
+
+        new_grads = mlp_backward(dy_pred, cache, params)
+        accum_grads = accumulate_gradients(accum_grads, new_grads)
+
+    return accum_grads
 
 # Step 15 - mlp_forward_checkpointed (not yet solved)
 # TODO: implement
