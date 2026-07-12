@@ -28,7 +28,7 @@ python scaffold.py
 - [x] **16.** recompute_block_activations
 - [x] **17.** mlp_backward_checkpointed
 - [x] **18.** estimate_checkpointing_memory_savings
-- [ ] **19.** cast_to_half_precision
+- [x] **19.** cast_to_half_precision
 - [ ] **20.** make_master_params
 - [ ] **21.** scale_loss
 - [ ] **22.** unscale_gradients
