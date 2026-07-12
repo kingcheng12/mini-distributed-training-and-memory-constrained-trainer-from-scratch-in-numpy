@@ -180,8 +180,18 @@ def grad_accumulation_step(x, y, params, micro_batch_size):
         len(micro_batches)
     )
 
-# Step 15 - mlp_forward_checkpointed (not yet solved)
-# TODO: implement
+# Step 15 - mlp_forward_checkpointed
+def mlp_forward_checkpointed(x, params):
+    # TODO: forward pass that caches only the block input x, not intermediates.
+    z1 = linear_forward(x, params['W1'], params['b1'])
+    a1 = relu_forward(z1)
+
+    z2 = linear_forward(a1, params['W2'], params['b2'])
+
+    cache = {}
+    cache['x'] = x
+
+    return z2, cache
 
 # Step 16 - recompute_block_activations (not yet solved)
 # TODO: implement
