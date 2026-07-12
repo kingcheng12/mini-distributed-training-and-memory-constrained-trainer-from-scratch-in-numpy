@@ -30,7 +30,7 @@ python scaffold.py
 - [x] **18.** estimate_checkpointing_memory_savings
 - [x] **19.** cast_to_half_precision
 - [x] **20.** make_master_params
-- [ ] **21.** scale_loss
+- [x] **21.** scale_loss
 - [ ] **22.** unscale_gradients
 - [ ] **23.** has_non_finite_gradients
 - [ ] **24.** mixed_precision_step

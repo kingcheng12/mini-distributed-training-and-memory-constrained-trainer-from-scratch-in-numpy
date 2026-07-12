@@ -272,8 +272,10 @@ def make_master_params(params):
 
     return out
 
-# Step 21 - scale_loss (not yet solved)
-# TODO: implement
+# Step 21 - scale_loss
+def scale_loss(loss, dy_pred, scale):
+    # TODO: Scale the scalar loss and the upstream gradient dy_pred by the fixed loss scale.
+    return loss * scale, dy_pred * scale
 
 # Step 22 - unscale_gradients (not yet solved)
 # TODO: implement
