@@ -209,8 +209,26 @@ def recompute_block_activations(x, params):
 
     return cache
 
-# Step 17 - mlp_backward_checkpointed (not yet solved)
-# TODO: implement
+# Step 17 - mlp_backward_checkpointed
+def mlp_backward_checkpointed(dy_pred, light_cache, params):
+    # TODO: recompute activations from light_cache['x'] and run the standard MLP backward
+    cache = recompute_block_activations(light_cache['x'], params)
+
+    # z2 = a1 @ W2 + b2
+    da1, dW2, db2 = linear_backward(dy_pred, cache['a1'], params['W2'])
+
+    # a1 = relu(z1)
+    dz1 = relu_backward(da1, cache['z1'])
+
+    # z1 = x @ W1 + b1
+    dx, dW1, db1 = linear_backward(dz1, cache['x'], params['W1'])
+
+    return {
+        'W1': dW1,
+        'b1': db1,
+        'W2': dW2,
+        'b2': db2
+    }
 
 # Step 18 - estimate_checkpointing_memory_savings (not yet solved)
 # TODO: implement
