@@ -193,8 +193,21 @@ def mlp_forward_checkpointed(x, params):
 
     return z2, cache
 
-# Step 16 - recompute_block_activations (not yet solved)
-# TODO: implement
+# Step 16 - recompute_block_activations
+def recompute_block_activations(x, params):
+    # TODO: recompute z1, a1, z2 from x and params and return them in a cache dict
+    
+    z1 = linear_forward(x, params['W1'], params['b1'])
+    a1 = relu_forward(z1)
+    z2 = linear_forward(a1, params['W2'], params['b2'])
+
+    cache = {}
+    cache['x'] = x
+    cache['z1'] = z1
+    cache['a1'] = a1
+    cache['z2'] = z2
+
+    return cache
 
 # Step 17 - mlp_backward_checkpointed (not yet solved)
 # TODO: implement

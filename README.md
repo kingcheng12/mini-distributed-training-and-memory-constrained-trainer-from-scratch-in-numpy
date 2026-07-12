@@ -25,7 +25,7 @@ python scaffold.py
 - [x] **13.** scale_accumulated_gradients
 - [x] **14.** grad_accumulation_step
 - [x] **15.** mlp_forward_checkpointed
-- [ ] **16.** recompute_block_activations
+- [x] **16.** recompute_block_activations
 - [ ] **17.** mlp_backward_checkpointed
 - [ ] **18.** estimate_checkpointing_memory_savings
 - [ ] **19.** cast_to_half_precision
