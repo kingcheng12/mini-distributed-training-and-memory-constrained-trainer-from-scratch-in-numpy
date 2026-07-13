@@ -374,8 +374,109 @@ def all_reduce_mean(per_worker_grads):
 
     return out
 
-# Step 28 - ring_all_reduce_mean (not yet solved)
-# TODO: implement
+# Step 28 - ring_all_reduce_mean
+def ring_all_reduce_mean(per_worker_arrays):
+    # TODO: average arrays across workers via ring reduce-scatter then all-gather over chunks.
+
+    arrays = [np.asarray(arr) for arr in per_worker_arrays]
+    num_workers = len(arrays)
+    original_shape = arrays[0].shape
+
+    # Use floating point so integer inputs can produce a fractional mean.
+    dtype = np.result_type(
+        *(arr.dtype for arr in arrays),
+        np.float64
+    )
+
+    num_elements = arrays[0].size
+
+    # Pad so the flattened arrays can be split into equal-sized chunks.
+    padded_size = (
+        ((num_elements + num_workers - 1) // num_workers) * num_workers
+        if num_elements > 0
+        else 0
+    )
+
+    worker_chunks = []
+
+    for arr in arrays:
+        flat = arr.astype(dtype, copy=False).reshape(-1)
+
+        if padded_size > num_elements:
+            flat = np.pad(
+                flat,
+                (0, padded_size - num_elements),
+                mode="constant"
+            )
+
+        chunks = [
+            chunk.copy()
+            for chunk in np.split(flat, num_workers)
+        ]
+        worker_chunks.append(chunks)
+
+    # ------------------------------------------------------------
+    # Phase 1: ring reduce-scatter
+    # ------------------------------------------------------------
+    for step in range(num_workers - 1):
+        sends = []
+
+        # All workers send simultaneously.
+        for rank in range(num_workers):
+            send_chunk_index = (rank - step) % num_workers
+            sends.append(
+                worker_chunks[rank][send_chunk_index].copy()
+            )
+
+        # Each worker receives from its previous neighbor and adds.
+        for rank in range(num_workers):
+            previous_rank = (rank - 1) % num_workers
+            receive_chunk_index = (
+                rank - step - 1
+            ) % num_workers
+
+            worker_chunks[rank][receive_chunk_index] += (
+                sends[previous_rank]
+            )
+
+    # After reduce-scatter, worker rank owns fully reduced chunk:
+    #
+    #     (rank + 1) % num_workers
+
+    # ------------------------------------------------------------
+    # Phase 2: ring all-gather
+    # ------------------------------------------------------------
+    for step in range(num_workers - 1):
+        sends = []
+
+        # Send the reduced chunk owned or received in the prior step.
+        for rank in range(num_workers):
+            send_chunk_index = (
+                rank - step + 1
+            ) % num_workers
+
+            sends.append(
+                worker_chunks[rank][send_chunk_index].copy()
+            )
+
+        # Receive a completed chunk from the previous worker.
+        for rank in range(num_workers):
+            previous_rank = (rank - 1) % num_workers
+            receive_chunk_index = (
+                rank - step
+            ) % num_workers
+
+            worker_chunks[rank][receive_chunk_index] = (
+                sends[previous_rank]
+            )
+
+    # Every worker now holds the complete globally summed tensor.
+    summed_flat = np.concatenate(worker_chunks[0])
+
+    # Remove padding and convert the sum into a mean.
+    mean_flat = summed_flat[:num_elements] / num_workers
+
+    return mean_flat.reshape(original_shape)
 
 # Step 29 - data_parallel_train_step (not yet solved)
 # TODO: implement
