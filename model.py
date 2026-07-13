@@ -362,8 +362,17 @@ def compute_local_gradients(x, y, params):
 
     return grads
 
-# Step 27 - all_reduce_mean (not yet solved)
-# TODO: implement
+# Step 27 - all_reduce_mean
+def all_reduce_mean(per_worker_grads):
+    # TODO: average a list of gradient dicts elementwise across workers
+    
+    params = per_worker_grads[0].keys()
+    out = {}
+
+    for param in params:
+        out[param] = np.mean([grads[param] for grads in per_worker_grads], axis = 0)
+
+    return out
 
 # Step 28 - ring_all_reduce_mean (not yet solved)
 # TODO: implement

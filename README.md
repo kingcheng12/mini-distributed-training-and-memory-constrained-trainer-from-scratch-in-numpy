@@ -36,7 +36,7 @@ python scaffold.py
 - [x] **24.** mixed_precision_step
 - [x] **25.** shard_dataset_across_workers
 - [x] **26.** compute_local_gradients
-- [ ] **27.** all_reduce_mean
+- [x] **27.** all_reduce_mean
 - [ ] **28.** ring_all_reduce_mean
 - [ ] **29.** data_parallel_train_step
 - [ ] **30.** bucket_gradients
