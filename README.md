@@ -38,7 +38,7 @@ python scaffold.py
 - [x] **26.** compute_local_gradients
 - [x] **27.** all_reduce_mean
 - [x] **28.** ring_all_reduce_mean
-- [ ] **29.** data_parallel_train_step
+- [x] **29.** data_parallel_train_step
 - [ ] **30.** bucket_gradients
 - [ ] **31.** init_adam_state
 - [ ] **32.** partition_optimizer_state
