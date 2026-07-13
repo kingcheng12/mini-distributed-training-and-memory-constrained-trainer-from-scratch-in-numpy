@@ -338,8 +338,14 @@ def mixed_precision_step(x, y, master_params, scale, lr):
 
     return loss, new_master, False
 
-# Step 25 - shard_dataset_across_workers (not yet solved)
-# TODO: implement
+# Step 25 - shard_dataset_across_workers
+def shard_dataset_across_workers(x, y, num_workers):
+    # TODO: split x and y into num_workers contiguous shards along axis 0
+    
+    x_shards = np.array_split(x, num_workers, axis=0)
+    y_shards = np.array_split(y, num_workers, axis=0)
+
+    return list(zip(x_shards, y_shards))
 
 # Step 26 - compute_local_gradients (not yet solved)
 # TODO: implement

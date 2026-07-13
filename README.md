@@ -34,7 +34,7 @@ python scaffold.py
 - [x] **22.** unscale_gradients
 - [x] **23.** has_non_finite_gradients
 - [x] **24.** mixed_precision_step
-- [ ] **25.** shard_dataset_across_workers
+- [x] **25.** shard_dataset_across_workers
 - [ ] **26.** compute_local_gradients
 - [ ] **27.** all_reduce_mean
 - [ ] **28.** ring_all_reduce_mean
