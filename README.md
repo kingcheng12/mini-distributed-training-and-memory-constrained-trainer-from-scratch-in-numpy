@@ -40,7 +40,7 @@ python scaffold.py
 - [x] **28.** ring_all_reduce_mean
 - [x] **29.** data_parallel_train_step
 - [x] **30.** bucket_gradients
-- [ ] **31.** init_adam_state
+- [x] **31.** init_adam_state
 - [ ] **32.** partition_optimizer_state
 - [ ] **33.** local_shard_adam_update
 - [ ] **34.** all_gather_param_shards
