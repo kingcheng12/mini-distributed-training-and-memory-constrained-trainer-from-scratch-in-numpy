@@ -751,7 +751,7 @@ def compare_memory_with_and_without_optimizations(x, params, num_workers):
         optimized_params[name] = params[name].astype(np.float16, copy = True)
 
     param_bytes = compute_param_memory_bytes(optimized_params)
-    state = init_adam_state(baseline_params)
+    state = init_adam_state(baseline_params) # Note that grad state will remain full precision
     opt_bytes = compute_optimizer_memory_bytes(state = state, num_workers = num_workers, sharded = True)
     act_bytes = compute_peak_activation_memory_bytes(x, optimized_params, checkpointed = True)
 
