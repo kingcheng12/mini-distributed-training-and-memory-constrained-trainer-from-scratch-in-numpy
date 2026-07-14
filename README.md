@@ -45,7 +45,7 @@ python scaffold.py
 - [x] **33.** local_shard_adam_update
 - [x] **34.** all_gather_param_shards
 - [x] **35.** zero_optimizer_step
-- [ ] **36.** compute_param_memory_bytes
+- [x] **36.** compute_param_memory_bytes
 - [ ] **37.** compute_optimizer_memory_bytes
 - [ ] **38.** compute_peak_activation_memory_bytes
 - [ ] **39.** compare_memory_with_and_without_optimizations

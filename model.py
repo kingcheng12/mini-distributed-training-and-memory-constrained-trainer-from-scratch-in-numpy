@@ -662,8 +662,22 @@ def zero_optimizer_step(params, grads, worker_states, lr=1e-3, beta1=0.9, beta2=
 
     return new_params, ws
 
-# Step 36 - compute_param_memory_bytes (not yet solved)
-# TODO: implement
+# Step 36 - compute_param_memory_bytes
+def compute_param_memory_bytes(params):
+    # TODO: sum the total bytes occupied by every parameter array in the dict.
+    bytes = 0
+
+    for  param in params.values():
+        if param.dtype == np.float16:
+            param_size = 2
+        elif param.dtype == np.float32:
+            param_size = 4
+        else:
+            param_size = param.dtype.itemsize
+        
+        bytes += param_size * param.size
+
+    return bytes
 
 # Step 37 - compute_optimizer_memory_bytes (not yet solved)
 # TODO: implement
