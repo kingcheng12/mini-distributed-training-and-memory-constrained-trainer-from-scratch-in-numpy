@@ -578,8 +578,50 @@ def partition_optimizer_state(state, num_workers):
     
     return workers
 
-# Step 33 - local_shard_adam_update (not yet solved)
-# TODO: implement
+# Step 33 - local_shard_adam_update
+def local_shard_adam_update(params, grads, worker_state, lr=1e-3, beta1=0.9, beta2=0.999, eps=1e-8):
+    # TODO: Apply an Adam update to only the local shard of each parameter using its owned moment shards.
+    updated_worker_state = worker_state.copy()
+    updated_param_shards = {}
+
+    t = updated_worker_state["t"] + 1
+
+    for name in updated_worker_state["m"]:
+        start, end = updated_worker_state["shard_slices"][name]
+        original_shape = updated_worker_state["shapes"][name]
+
+        param_flat = np.asarray(params[name]).reshape(-1)
+        grad_flat = np.asarray(grads[name]).reshape(-1)
+
+        param_shard = param_flat[start:end].copy()
+        grad_shard = grad_flat[start:end]
+
+        m = updated_worker_state["m"][name]
+        v = updated_worker_state["v"][name]
+
+        # Update the local Adam moment shards.
+        m_new = beta1 * m + (1.0 - beta1) * grad_shard
+        v_new = beta2 * v + (1.0 - beta2) * grad_shard**2
+
+        # Bias correction uses the incremented time step.
+        m_hat = m_new / (1.0 - beta1**t)
+        v_hat = v_new / (1.0 - beta2**t)
+
+        # Update only the parameter range owned by this worker.
+        param_flat[start:end] -= (
+            lr * m_hat / (np.sqrt(v_hat) + eps)
+        )
+
+        updated_param_shards[name] = (
+            param_shard
+            - lr * m_hat / (np.sqrt(v_hat) + eps)
+        )
+        updated_worker_state["m"][name] = m_new
+        updated_worker_state["v"][name] = v_new
+
+    updated_worker_state["t"] = t
+
+    return updated_param_shards, updated_worker_state
 
 # Step 34 - all_gather_param_shards (not yet solved)
 # TODO: implement

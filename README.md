@@ -42,7 +42,7 @@ python scaffold.py
 - [x] **30.** bucket_gradients
 - [x] **31.** init_adam_state
 - [x] **32.** partition_optimizer_state
-- [ ] **33.** local_shard_adam_update
+- [x] **33.** local_shard_adam_update
 - [ ] **34.** all_gather_param_shards
 - [ ] **35.** zero_optimizer_step
 - [ ] **36.** compute_param_memory_bytes
