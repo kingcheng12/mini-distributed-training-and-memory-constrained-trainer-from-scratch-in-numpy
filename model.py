@@ -765,6 +765,240 @@ def compare_memory_with_and_without_optimizations(x, params, num_workers):
 
     return out
 
-# Step 40 - full_distributed_training_loop (not yet solved)
-# TODO: implement
+# Step 40 - full_distributed_training_loop
+def full_distributed_training_loop(x, y, num_workers=2, num_steps=10, micro_batch_size=8, lr=1e-3, hidden_dim=16, use_checkpointing=True, use_mixed_precision=True, use_zero=True, seed=0):
+    # TODO: run end-to-end distributed memory-aware training and return loss_history and final_params.
+    x = np.asarray(x)
+    y = np.asarray(y)
+
+    params = init_mlp_params(
+        in_dim=x.shape[-1],
+        hidden_dim=hidden_dim,
+        out_dim=y.shape[-1],
+        seed=seed,
+    )
+    
+    shards = shard_dataset_across_workers(x, y, num_workers)
+    adam_state = init_adam_state(params)
+
+    if use_zero:
+        worker_states = partition_optimizer_state(
+            adam_state,
+            num_workers,
+        )
+    else:
+        worker_states = None
+
+    loss_history = []
+
+    beta1 = 0.9
+    beta2 = 0.999
+    eps = 1e-8
+    loss_scale = 128.0
+
+    for _ in range(num_steps):
+        per_worker_grads = []
+        per_worker_losses = []
+        per_worker_sizes = []
+
+        overflow_detected = False
+        
+        # Each worker processes its own data shard.
+        for worker_x, worker_y in shards:
+            worker_size = worker_x.shape[0]
+            per_worker_sizes.append(worker_size)
+
+            accumulated_grads = {
+                name: np.zeros_like(param, dtype=np.float32)
+                for name, param in params.items()
+            }
+            worker_loss_sum = 0
+
+            # Split the worker shard into micro-batches.
+            for micro_x, micro_y in split_into_micro_batches(worker_x, worker_y, micro_batch_size):
+                current_batch_size = micro_x.shape[0]
+
+                if use_mixed_precision:
+                    compute_params = cast_to_half_precision(params)
+                    compute_x = micro_x.astype(np.float16)
+                    compute_y = micro_y.astype(np.float16)
+                else:
+                    compute_params = params
+                    compute_x = micro_x.astype(np.float32, copy=False)
+                    compute_y = micro_y.astype(np.float32, copy=False)
+
+                if use_checkpointing:
+                    # Checkpointed forward stores a reduced cache.
+                    predictions, _ = mlp_forward_checkpointed(
+                        compute_x,
+                        compute_params,
+                    )
+
+                    loss, dy_pred = mse_loss_and_grad(
+                        predictions,
+                        compute_y,
+                    )
+
+                    # Recompute the full forward pass to restore activations for backward.
+                    _, cache = mlp_forward(
+                        compute_x,
+                        compute_params,
+                    )
+                else:
+                    # Normal forward retains the full cache required by mlp_backward.
+                    predictions, cache = mlp_forward(
+                        compute_x,
+                        compute_params,
+                    )
+
+                    loss, dy_pred = mse_loss_and_grad(
+                        predictions,
+                        compute_y,
+                    )
+
+                if use_mixed_precision:
+                    _, scaled_dy_pred = scale_loss(
+                        loss,
+                        dy_pred,
+                        loss_scale,
+                    )
+
+                    scaled_grads = mlp_backward(
+                        scaled_dy_pred,
+                        cache,
+                        compute_params,
+                    )
+
+                    # Adam and gradient communication remain FP32.
+                    scaled_grads = {
+                        name: grad.astype(np.float32)
+                        for name, grad in scaled_grads.items()
+                    }
+
+                    grads = unscale_gradients(
+                        scaled_grads,
+                        loss_scale,
+                    )
+                else:
+                    grads = mlp_backward(
+                        dy_pred,
+                        cache,
+                        compute_params,
+                    )
+
+                    grads = {
+                        name: grad.astype(np.float32, copy=False)
+                        for name, grad in grads.items()
+                    }
+
+                if has_non_finite_gradients(grads):
+                    overflow_detected = True
+
+                # Weight by micro-batch size so a smaller final batch does not
+                # receive the same weight as a full micro-batch.
+                for name in accumulated_grads:
+                    accumulated_grads[name] += (
+                        grads[name] * current_batch_size
+                    )
+
+                worker_loss_sum += float(loss) * current_batch_size
+
+            if worker_size > 0:
+                worker_grads = {
+                    name: grad / worker_size
+                    for name, grad in accumulated_grads.items()
+                }
+
+                worker_loss = worker_loss_sum / worker_size
+            else:
+                # Supports num_workers > number of training examples.
+                worker_grads = accumulated_grads
+                worker_loss = 0.0
+
+            per_worker_grads.append(worker_grads)
+            per_worker_losses.append(worker_loss)
+
+        total_examples = sum(per_worker_sizes)
+
+        # Globally average gradients. Weighting by worker size handles
+        # uneven np.array_split shards correctly.
+        global_grads = {}
+
+        for name in params:
+            weighted_worker_grads = [
+                per_worker_grads[worker_id][name]
+                * per_worker_sizes[worker_id]
+                for worker_id in range(num_workers)
+            ]
+
+            # ring_all_reduce_mean returns:
+            # sum(weighted gradients) / num_workers
+            reduced_grad = ring_all_reduce_mean(
+                weighted_worker_grads
+            )
+
+            global_grads[name] = (
+                reduced_grad
+                * num_workers
+                / total_examples
+            ).astype(np.float32)
+
+        global_loss = sum(
+            per_worker_losses[worker_id]
+            * per_worker_sizes[worker_id]
+            for worker_id in range(num_workers)
+        ) / total_examples
+
+        loss_history.append(float(global_loss))
+
+        # Mixed-precision overflow skips the entire optimizer step.
+        if overflow_detected:
+            continue
+
+        if use_zero:
+            params, worker_states = zero_optimizer_step(
+                params,
+                global_grads,
+                worker_states,
+                lr=lr,
+                beta1=beta1,
+                beta2=beta2,
+                eps=eps,
+            )
+        else:
+            # Replicated Adam optimizer.
+            adam_state["t"] += 1
+            t = adam_state["t"]
+
+            for name in params:
+                adam_state["m"][name] = (
+                    beta1 * adam_state["m"][name]
+                    + (1.0 - beta1) * global_grads[name]
+                )
+
+                adam_state["v"][name] = (
+                    beta2 * adam_state["v"][name]
+                    + (1.0 - beta2)
+                    * np.square(global_grads[name])
+                )
+
+                m_hat = (
+                    adam_state["m"][name]
+                    / (1.0 - beta1 ** t)
+                )
+
+                v_hat = (
+                    adam_state["v"][name]
+                    / (1.0 - beta2 ** t)
+                )
+
+                params[name] = (
+                    params[name]
+                    - lr * m_hat / (np.sqrt(v_hat) + eps)
+                ).astype(np.float32)
+
+    return {
+        "loss_history": loss_history,
+        "final_params": params,
+    }
 

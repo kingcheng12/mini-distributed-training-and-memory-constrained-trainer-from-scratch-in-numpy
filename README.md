@@ -49,7 +49,7 @@ python scaffold.py
 - [x] **37.** compute_optimizer_memory_bytes
 - [x] **38.** compute_peak_activation_memory_bytes
 - [x] **39.** compare_memory_with_and_without_optimizations
-- [ ] **40.** full_distributed_training_loop
+- [x] **40.** full_distributed_training_loop
 
 ---
 
