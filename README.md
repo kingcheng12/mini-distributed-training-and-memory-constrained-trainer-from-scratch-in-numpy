@@ -44,7 +44,7 @@ python scaffold.py
 - [x] **32.** partition_optimizer_state
 - [x] **33.** local_shard_adam_update
 - [x] **34.** all_gather_param_shards
-- [ ] **35.** zero_optimizer_step
+- [x] **35.** zero_optimizer_step
 - [ ] **36.** compute_param_memory_bytes
 - [ ] **37.** compute_optimizer_memory_bytes
 - [ ] **38.** compute_peak_activation_memory_bytes
