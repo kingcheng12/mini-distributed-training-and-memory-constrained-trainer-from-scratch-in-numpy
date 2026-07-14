@@ -608,10 +608,6 @@ def local_shard_adam_update(params, grads, worker_state, lr=1e-3, beta1=0.9, bet
         v_hat = v_new / (1.0 - beta2**t)
 
         # Update only the parameter range owned by this worker.
-        param_flat[start:end] -= (
-            lr * m_hat / (np.sqrt(v_hat) + eps)
-        )
-
         updated_param_shards[name] = (
             param_shard
             - lr * m_hat / (np.sqrt(v_hat) + eps)
