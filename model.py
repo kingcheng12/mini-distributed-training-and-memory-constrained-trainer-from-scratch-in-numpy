@@ -723,8 +723,47 @@ def compute_peak_activation_memory_bytes(x, params, checkpointed=False):
 
     return int(bytes)
 
-# Step 39 - compare_memory_with_and_without_optimizations (not yet solved)
-# TODO: implement
+# Step 39 - compare_memory_with_and_without_optimizations
+def compare_memory_with_and_without_optimizations(x, params, num_workers):
+    # TODO: report baseline vs optimized per-worker memory (params, optimizer, activations) and savings ratio.
+    out = {'breakdown_baseline': {},
+            'breakdown_optimized': {}}
+    
+    # baseline
+    baseline_params = {}
+    for name in params.keys():
+        baseline_params[name] = params[name].astype(np.float32, copy = True)
+
+    param_bytes = compute_param_memory_bytes(baseline_params)
+    state = init_adam_state(baseline_params)
+    opt_bytes = compute_optimizer_memory_bytes(state = state, num_workers = num_workers, sharded = False)
+    act_bytes = compute_peak_activation_memory_bytes(x, baseline_params, checkpointed = False)
+
+    out['breakdown_baseline']['params'] = param_bytes
+    out['breakdown_baseline']['optimizer'] = opt_bytes
+    out['breakdown_baseline']['activations'] = act_bytes
+
+    out['baseline_bytes'] = param_bytes + opt_bytes + act_bytes
+
+    # optimized
+    optimized_params = {}
+    for name in params.keys():
+        optimized_params[name] = params[name].astype(np.float16, copy = True)
+
+    param_bytes = compute_param_memory_bytes(optimized_params)
+    state = init_adam_state(baseline_params)
+    opt_bytes = compute_optimizer_memory_bytes(state = state, num_workers = num_workers, sharded = True)
+    act_bytes = compute_peak_activation_memory_bytes(x, optimized_params, checkpointed = True)
+
+    out['breakdown_optimized']['params'] = param_bytes
+    out['breakdown_optimized']['optimizer'] = opt_bytes
+    out['breakdown_optimized']['activations'] = act_bytes
+
+    out['optimized_bytes'] = param_bytes + opt_bytes + act_bytes
+
+    out['savings_ratio'] = (out['baseline_bytes'] - out['optimized_bytes']) / out['baseline_bytes']
+
+    return out
 
 # Step 40 - full_distributed_training_loop (not yet solved)
 # TODO: implement
