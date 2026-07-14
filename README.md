@@ -41,7 +41,7 @@ python scaffold.py
 - [x] **29.** data_parallel_train_step
 - [x] **30.** bucket_gradients
 - [x] **31.** init_adam_state
-- [ ] **32.** partition_optimizer_state
+- [x] **32.** partition_optimizer_state
 - [ ] **33.** local_shard_adam_update
 - [ ] **34.** all_gather_param_shards
 - [ ] **35.** zero_optimizer_step
