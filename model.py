@@ -679,8 +679,27 @@ def compute_param_memory_bytes(params):
 
     return bytes
 
-# Step 37 - compute_optimizer_memory_bytes (not yet solved)
-# TODO: implement
+# Step 37 - compute_optimizer_memory_bytes
+def compute_optimizer_memory_bytes(state, num_workers=1, sharded=False):
+    # TODO: return per-worker bytes of Adam state (m and v), dividing by num_workers if sharded.
+    bytes = 0
+
+    for opt_param in ['m', 'v']:
+        for param in state[opt_param].values():
+
+            if param.dtype == np.float16:
+                param_size = 2
+            elif param.dtype == np.float32:
+                param_size = 4
+            else:
+                param_size = param.dtype.itemsize
+            
+            bytes += param_size * param.size
+    
+    if sharded:
+        bytes /= num_workers
+
+    return int(bytes)
 
 # Step 38 - compute_peak_activation_memory_bytes (not yet solved)
 # TODO: implement
