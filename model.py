@@ -701,8 +701,27 @@ def compute_optimizer_memory_bytes(state, num_workers=1, sharded=False):
 
     return int(bytes)
 
-# Step 38 - compute_peak_activation_memory_bytes (not yet solved)
-# TODO: implement
+# Step 38 - compute_peak_activation_memory_bytes
+def compute_peak_activation_memory_bytes(x, params, checkpointed=False):
+    # TODO: return total bytes of activations retained by the forward cache
+    bytes = 0
+
+    if not checkpointed:
+        y_pred, cache = mlp_forward(x, params)
+    else:
+        y_pred, cache = mlp_forward_checkpointed(x, params)
+
+    for arr in cache.values():
+        if arr.dtype == np.float16:
+            num_size = 2
+        elif arr.dtype == np.float32:
+            num_size = 4
+        elif arr.dtype == np.float64:
+            num_size = 8
+        
+        bytes += num_size * arr.size
+
+    return int(bytes)
 
 # Step 39 - compare_memory_with_and_without_optimizations (not yet solved)
 # TODO: implement
